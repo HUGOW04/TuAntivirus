@@ -9,3 +9,4 @@ Scan a single file with md5 value
 ```
 Multi Scan files with md5 value
 ```
+Antivirus
