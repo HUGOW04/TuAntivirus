@@ -2,10 +2,10 @@
 
 ## Completed
 ```
-Scan a single with md5 value
+Scan a single file with md5 value
 ```
 
 ## Todo
 ```
-Multi Scan
+Multi Scan files with md5 value
 ```
