@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string>
 #include <fstream>
+#include <filesystem>
 #include "md5.h"
 
 
@@ -233,7 +234,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		else if (LOWORD(wParam) == SCANALL)
 		{
-			MessageBox(hWnd, "WORK IN PROGRESS", "IN PROGRESS", MB_OK);
+			TCHAR openFileName[MAX_PATH];
+			std::string infected = "infected";
+			std::string clean = "clean";
+			std::ifstream file("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
+			for (auto const& entry : std::filesystem::recursive_directory_iterator("C:\\Users\\hugow\\Desktop\\New folder"))
+			{
+				std::string line;
+				bool found = false;
+				while (std::getline(file, line) && !found)
+				{
+					if (line.find(md5(openFileName)) != std::string::npos)
+					{
+						found = true;
+					}
+				}
+				if (found)
+				{
+					SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
+
+				}
+				else
+				{
+					SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
+				}
+			}
 		}
 		break;
 	case WM_DESTROY:
