@@ -238,6 +238,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			std::string infected = "infected";
 			std::string clean = "clean";
 			std::ifstream file("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
+			//inside the folder you want it to scan all the folders
 			for (auto const& entry : std::filesystem::recursive_directory_iterator("C:\\Users\\hugow\\Desktop\\New folder"))
 			{
 				std::string line;
@@ -251,11 +252,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				if (found)
 				{
+					SetWindowText(GetDlgItem(hwnd, SCANTEXT), entry.path().string().c_str());
 					SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
 
 				}
 				else
 				{
+					SetWindowText(GetDlgItem(hwnd, SCANTEXT), entry.path().string().c_str());
 					SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
 				}
 			}
