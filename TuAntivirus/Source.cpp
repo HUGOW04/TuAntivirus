@@ -12,7 +12,7 @@
 
 // Global variables
 #define SCAN 1
-#define SCANALL 2
+#define PATH 2
 #define SCANTEXT 3
 #define STATUS 4
 
@@ -68,13 +68,13 @@ bool openFileDialog(TCHAR szFileName[])
 	{
 
 		MessageBox(NULL, "Opening filepath", "SUCCESS !!!", MB_OK);
-		
+
 		return 1;
 	}
 	else
 	{
 
-		MessageBox(NULL, "error","FAILURE !!!", MB_OK);
+		MessageBox(NULL, "error", "FAILURE !!!", MB_OK);
 		return 0;
 	}
 }
@@ -98,7 +98,7 @@ int WINAPI WinMain(
 	wcex.hInstance = hInstance;
 	wcex.hIcon = LoadIcon(wcex.hInstance, IDI_APPLICATION);
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
@@ -152,7 +152,7 @@ int WINAPI WinMain(
 
 	// Main message loop:
 	MSG msg;
-	while (GetMessage(&msg,NULL,0,0))
+	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
@@ -173,7 +173,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 	TCHAR logo[] = _T("Tu AntiVirus");
-
+	TCHAR path[] = _T("Path:");
+	TCHAR md5value[] = _T("MD5:");
+	TCHAR status[] = _T("Status:");
 	switch (message)
 	{
 	case WM_PAINT:
@@ -182,25 +184,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// For this introduction, we just print out "Tu AntiVirus!"
 		// in the bottom left corner.
 		TextOut(hdc, 20, 500, logo, _tcslen(logo));
+		TextOut(hdc, 20, 100, path, _tcslen(path));
+		TextOut(hdc, 20, 120, md5value, _tcslen(md5value));
+		TextOut(hdc, 20, 140, status, _tcslen(status));
 		// End application-specific layout section.
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_CREATE:
 		CreateWindow(TEXT("Button"), TEXT("Scan"),
 			WS_CHILD | WS_VISIBLE,
-			20, 20, 80, 80,
+			20, 20, 200, 80,
 			hWnd, (HMENU)SCAN, NULL, NULL);
-		CreateWindow(TEXT("Button"), TEXT("ScanAll"),
-			WS_CHILD | WS_VISIBLE,
-			120, 20, 80, 80,
-			hWnd, (HMENU)SCANALL, NULL, NULL);
 		CreateWindow("Edit", "...",
 			WS_VISIBLE | WS_CHILD,
-			20, 100, 400, 20,
+			65, 100, 400, 20,
+			hWnd, (HMENU)PATH, NULL, NULL);
+		CreateWindow("Edit", "...",
+			WS_VISIBLE | WS_CHILD,
+			65, 120, 400, 20,
 			hWnd, (HMENU)SCANTEXT, NULL, NULL);
 		CreateWindow("Static", "N/A",
 			WS_VISIBLE | WS_CHILD,
-			20, 120, 120, 20,
+			65, 140, 120, 20,
 			hWnd, (HMENU)STATUS, NULL, NULL);
 		break;
 	case WM_COMMAND:
@@ -210,59 +215,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			std::string clean = "clean";
 			TCHAR openFileName[MAX_PATH];
 			openFileDialog(openFileName);
-			SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(openFileName).c_str());
+			
 			//path to hashcodes.txt to compare if the file is infected or not with malware for more md5 hashes visit virusshare.com
 			std::ifstream file("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
 			std::string line;
 			bool found = false;
-			while (std::getline(file,line)&& !found)
+			while (std::getline(file, line) && !found)
 			{
 				if (line.find(md5(openFileName)) != std::string::npos)
 				{
-					found = true;					
+					found = true;
 				}
 			}
 			if (found)
 			{
+				SetWindowText(GetDlgItem(hwnd, PATH), openFileName);
+				SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(openFileName).c_str());
 				SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
-
 			}
 			else
 			{
+				SetWindowText(GetDlgItem(hwnd, PATH), openFileName);
+				SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(openFileName).c_str());
 				SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
 			}
-		}
-		else if (LOWORD(wParam) == SCANALL)
-		{
-			TCHAR openFileName[MAX_PATH];
-			std::string infected = "infected";
-			std::string clean = "clean";
-			std::ifstream file("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
-			//inside the folder you want it to scan all the folders
-			for (auto const& entry : std::filesystem::recursive_directory_iterator("C:\\Users\\hugow\\Desktop\\New folder"))
-			{
-				std::string line;
-				bool found = false;
-				while (std::getline(file, line) && !found)
-				{
-					if (line.find(md5(openFileName)) != std::string::npos)
-					{
-						found = true;
-					}
-				}
-				if (found)
-				{
-					SetWindowText(GetDlgItem(hwnd, SCANTEXT), entry.path().string().c_str());
-					SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
-
-				}
-				else
-				{
-					SetWindowText(GetDlgItem(hwnd, SCANTEXT), entry.path().string().c_str());
-					SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
-				}
-			}
-		}
+		}		
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
