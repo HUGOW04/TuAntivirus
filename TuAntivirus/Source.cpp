@@ -262,9 +262,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				file.open(result.c_str(), std::ios_base::app);
-				file << openFileName << " " << md5(openFileName) << " Clean " << "\n";
-				file.close();
 				SetWindowText(GetDlgItem(hwnd, PATH), openFileName);
 				SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(openFileName).c_str());
 				SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
@@ -315,9 +312,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						}
 						else
 						{
-							file.open(result.c_str(), std::ios_base::app);
-							file << entry->path().string().c_str() << " " << md5(entry->path().string()) << " Clean " << "\n";
-							file.close();
 							SetWindowText(GetDlgItem(hwnd, PATH), entry->path().string().c_str());
 							SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry->path().string()).c_str());
 							SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
