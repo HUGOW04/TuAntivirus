@@ -13,9 +13,11 @@
 // Global variables
 #define SCAN 1
 #define SCANALL 2
-#define PATH 3
-#define SCANTEXT 4
-#define STATUS 5
+#define OPENFILE 3
+#define PATH 4
+#define SCANTEXT 5
+#define STATUS 6
+#define SCANNING 7
 
 HWND hwnd;
 
@@ -178,6 +180,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	TCHAR path[] = _T("Path:");
 	TCHAR md5value[] = _T("MD5:");
 	TCHAR status[] = _T("Status:");
+	TCHAR scanning[] = _T("Scanning:");
 	switch (message)
 	{
 	case WM_PAINT:
@@ -189,7 +192,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		TextOut(hdc, 20, 100, path, _tcslen(path));
 		TextOut(hdc, 20, 120, md5value, _tcslen(md5value));
 		TextOut(hdc, 20, 140, status, _tcslen(status));
-
+		TextOut(hdc, 20, 160, scanning, _tcslen(scanning));
 		// End application-specific layout section.
 		EndPaint(hWnd, &ps);
 		break;
@@ -202,18 +205,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			WS_CHILD | WS_VISIBLE,
 			120, 20, 100, 80,
 			hWnd, (HMENU)SCANALL, NULL, NULL);
-		CreateWindow("Edit", "...",
+		CreateWindow(TEXT("Button"), TEXT("Open Result"),
+			WS_CHILD | WS_VISIBLE,
+			220, 20, 100, 80,
+			hWnd, (HMENU)OPENFILE, NULL, NULL);
+		CreateWindow("Static", "...",
 			WS_VISIBLE | WS_CHILD,
-			65, 100, 400, 20,
+			65, 100, 700, 20,
 			hWnd, (HMENU)PATH, NULL, NULL);
-		CreateWindow("Edit", "...",
+		CreateWindow("Static", "...",
 			WS_VISIBLE | WS_CHILD,
-			65, 120, 400, 20,
+			65, 120, 700, 20,
 			hWnd, (HMENU)SCANTEXT, NULL, NULL);
 		CreateWindow("Static", "N/A",
 			WS_VISIBLE | WS_CHILD,
-			65, 140, 400, 20,
+			65, 140, 700, 20,
 			hWnd, (HMENU)STATUS, NULL, NULL);
+		CreateWindow("Static", "...",
+			WS_VISIBLE | WS_CHILD,
+			85, 160, 600, 20,
+			hWnd, (HMENU)SCANNING, NULL, NULL);
 		break;
 	case WM_COMMAND:
 		if (LOWORD(wParam) == SCAN)
@@ -224,10 +235,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			openFileDialog(openFileName);
 
 			//path to hashcodes.txt to compare if the file is infected or not with malware for more md5 hashes visit virusshare.com
-			std::ifstream file("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
+			std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
 			std::string line;
+			std::string scan = "Scanning";
+			std::string done = "Done";
+			std::ofstream file;
+			std::string result = "result.txt";
 			bool found = false;
-			while (std::getline(file, line) && !found)
+			while (std::getline(hash, line) && !found)
 			{
 				if (line.find(md5(openFileName)) != std::string::npos)
 				{
@@ -236,25 +251,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			if (found)
 			{
+				file.open(result.c_str(), std::ios_base::app);
+				file << openFileName << " " << md5(openFileName) << " Infected " << "\n";
+				file.close();
 				SetWindowText(GetDlgItem(hwnd, PATH), openFileName);
 				SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(openFileName).c_str());
 				SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
+				SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
 			}
 			else
 			{
+				file.open(result.c_str(), std::ios_base::app);
+				file << openFileName << " " << md5(openFileName) << " Clean " << "\n";
+				file.close();
 				SetWindowText(GetDlgItem(hwnd, PATH), openFileName);
 				SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(openFileName).c_str());
 				SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
+				SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
 			}
+			SetWindowText(GetDlgItem(hwnd, SCANNING), done.c_str());
 		}
 		else if (LOWORD(wParam) == SCANALL)
 		{
-			for(auto const& entry : std::filesystem::directory_iterator("C:\\Users\\hugow\\Desktop\\New folder"))
+			std::string scan = "Scanning";
+			std::string done = "Done";
+			std::string infected = "infected";
+			std::string clean = "clean";
+			std::ofstream file;
+			for (auto const& entry : std::filesystem::recursive_directory_iterator("C:\\"))
 			{
-				
+
 				std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
-				std::string support = "not supporting fullscan";
-				std::ofstream file;
 				std::string result = "result.txt";
 				std::string line;
 				bool found = false;
@@ -268,26 +295,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (found)
 				{
 					file.open(result.c_str(), std::ios_base::app);
-					file << entry.path().string().c_str() <<" " << md5(entry.path().string()) << " Infected " << "\n";
+					file << entry.path().string().c_str() << " " << md5(entry.path().string()) << " Infected " << "\n";
 					file.close();
-					SetWindowText(GetDlgItem(hwnd, PATH), support.c_str());
-					SetWindowText(GetDlgItem(hwnd, SCANTEXT), support.c_str());
-					SetWindowText(GetDlgItem(hwnd, STATUS), support.c_str());
-					
+					SetWindowText(GetDlgItem(hwnd, PATH), entry.path().string().c_str());
+					SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry.path().string()).c_str());
+					SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
+					SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
 				}
 				else
 				{
 					file.open(result.c_str(), std::ios_base::app);
-					file << entry.path().string().c_str() <<" " << md5(entry.path().string()) << " Clean " << "\n";
+					file << entry.path().string().c_str() << " " << md5(entry.path().string()) << " Clean " << "\n";
 					file.close();
-					SetWindowText(GetDlgItem(hwnd, PATH), support.c_str());
-					SetWindowText(GetDlgItem(hwnd, SCANTEXT), support.c_str());
-					SetWindowText(GetDlgItem(hwnd, STATUS), support.c_str());
+					SetWindowText(GetDlgItem(hwnd, PATH), entry.path().string().c_str());
+					SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry.path().string()).c_str());
+					SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
+					SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
 				}
-				
+
 			}
-			MessageBox(NULL, "writing to file", "done", MB_OK);
-			
+
+			SetWindowText(GetDlgItem(hwnd, SCANNING), done.c_str());
+		}
+		else if (LOWORD(wParam) == OPENFILE)
+		{
 			
 		}
 		break;
