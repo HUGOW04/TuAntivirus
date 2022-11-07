@@ -212,7 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			hWnd, (HMENU)SCANTEXT, NULL, NULL);
 		CreateWindow("Static", "N/A",
 			WS_VISIBLE | WS_CHILD,
-			65, 140, 120, 20,
+			65, 140, 400, 20,
 			hWnd, (HMENU)STATUS, NULL, NULL);
 		break;
 	case WM_COMMAND:
