@@ -279,7 +279,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			std::string infected = "infected";
 			std::string clean = "clean";
 			std::ofstream file;
-			std::set<std::string> ignoredirs = { "system32","Program Files","Program Files (x86)","$Recycle.Bin","Windows","AppData","ProgramData" };
+			//"Program Files","Program Files (x86)","AppData","ProgramData"
+			std::set<std::string> ignoredirs = { "system32","$Recycle.Bin","Windows" };
 			std::string path = "C:\\Users";
 			for (std::filesystem::recursive_directory_iterator entry(path), end; entry != end; ++entry)
 			{
@@ -325,8 +326,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					
 				}
-				
-
 			}
 
 			SetWindowText(GetDlgItem(hwnd, SCANNING), done.c_str());
