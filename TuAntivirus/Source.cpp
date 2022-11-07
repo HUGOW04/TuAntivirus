@@ -12,9 +12,10 @@
 
 // Global variables
 #define SCAN 1
-#define PATH 2
-#define SCANTEXT 3
-#define STATUS 4
+#define SCANALL 2
+#define PATH 3
+#define SCANTEXT 4
+#define STATUS 5
 
 HWND hwnd;
 
@@ -30,6 +31,7 @@ HINSTANCE hInst;
 
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+
 
 OPENFILENAME ofn;
 DWORD error_value;
@@ -187,14 +189,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		TextOut(hdc, 20, 100, path, _tcslen(path));
 		TextOut(hdc, 20, 120, md5value, _tcslen(md5value));
 		TextOut(hdc, 20, 140, status, _tcslen(status));
+
 		// End application-specific layout section.
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_CREATE:
 		CreateWindow(TEXT("Button"), TEXT("Scan"),
 			WS_CHILD | WS_VISIBLE,
-			20, 20, 200, 80,
+			20, 20, 100, 80,
 			hWnd, (HMENU)SCAN, NULL, NULL);
+		CreateWindow(TEXT("Button"), TEXT("ScanAll"),
+			WS_CHILD | WS_VISIBLE,
+			120, 20, 100, 80,
+			hWnd, (HMENU)SCANALL, NULL, NULL);
 		CreateWindow("Edit", "...",
 			WS_VISIBLE | WS_CHILD,
 			65, 100, 400, 20,
@@ -215,7 +222,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			std::string clean = "clean";
 			TCHAR openFileName[MAX_PATH];
 			openFileDialog(openFileName);
-			
+
 			//path to hashcodes.txt to compare if the file is infected or not with malware for more md5 hashes visit virusshare.com
 			std::ifstream file("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
 			std::string line;
@@ -239,7 +246,50 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(openFileName).c_str());
 				SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
 			}
-		}		
+		}
+		else if (LOWORD(wParam) == SCANALL)
+		{
+			for(auto const& entry : std::filesystem::directory_iterator("C:\\Users\\hugow\\Desktop\\New folder"))
+			{
+				
+				std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
+				std::string support = "not supporting fullscan";
+				std::ofstream file;
+				std::string result = "result.txt";
+				std::string line;
+				bool found = false;
+				while (std::getline(hash, line) && !found)
+				{
+					if (line.find(md5(entry.path().string())) != std::string::npos)
+					{
+						found = true;
+					}
+				}
+				if (found)
+				{
+					file.open(result.c_str(), std::ios_base::app);
+					file << entry.path().string().c_str() <<" " << md5(entry.path().string()) << " Infected " << "\n";
+					file.close();
+					SetWindowText(GetDlgItem(hwnd, PATH), support.c_str());
+					SetWindowText(GetDlgItem(hwnd, SCANTEXT), support.c_str());
+					SetWindowText(GetDlgItem(hwnd, STATUS), support.c_str());
+					
+				}
+				else
+				{
+					file.open(result.c_str(), std::ios_base::app);
+					file << entry.path().string().c_str() <<" " << md5(entry.path().string()) << " Clean " << "\n";
+					file.close();
+					SetWindowText(GetDlgItem(hwnd, PATH), support.c_str());
+					SetWindowText(GetDlgItem(hwnd, SCANTEXT), support.c_str());
+					SetWindowText(GetDlgItem(hwnd, STATUS), support.c_str());
+				}
+				
+			}
+			MessageBox(NULL, "writing to file", "done", MB_OK);
+			
+			
+		}
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
