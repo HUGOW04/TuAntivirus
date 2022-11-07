@@ -289,37 +289,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				else if (!std::filesystem::is_directory(entry->path()) && entry->path().has_extension())
 				{
-					std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
-					std::string result = "result.txt";
-					std::string line;
-					bool found = false;
-					while (std::getline(hash, line) && !found)
+					if (entry->path().extension() == ".exe")
 					{
-						if (line.find(md5(entry->path().string())) != std::string::npos)
+						std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
+						std::string result = "result.txt";
+						std::string line;
+						bool found = false;
+						while (std::getline(hash, line) && !found)
 						{
-							found = true;
+							if (line.find(md5(entry->path().string())) != std::string::npos)
+							{
+								found = true;
+							}
+						}
+						if (found)
+						{
+							file.open(result.c_str(), std::ios_base::app);
+							file << entry->path().string().c_str() << " " << md5(entry->path().string()) << " Infected " << "\n";
+							file.close();
+							SetWindowText(GetDlgItem(hwnd, PATH), entry->path().string().c_str());
+							SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry->path().string()).c_str());
+							SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
+							SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
+						}
+						else
+						{
+							file.open(result.c_str(), std::ios_base::app);
+							file << entry->path().string().c_str() << " " << md5(entry->path().string()) << " Clean " << "\n";
+							file.close();
+							SetWindowText(GetDlgItem(hwnd, PATH), entry->path().string().c_str());
+							SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry->path().string()).c_str());
+							SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
+							SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
 						}
 					}
-					if (found)
-					{
-						file.open(result.c_str(), std::ios_base::app);
-						file << entry->path().string().c_str() << " " << md5(entry->path().string()) << " Infected " << "\n";
-						file.close();
-						SetWindowText(GetDlgItem(hwnd, PATH), entry->path().string().c_str());
-						SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry->path().string()).c_str());
-						SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
-						SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
-					}
-					else
-					{
-						file.open(result.c_str(), std::ios_base::app);
-						file << entry->path().string().c_str() << " " << md5(entry->path().string()) << " Clean " << "\n";
-						file.close();
-						SetWindowText(GetDlgItem(hwnd, PATH), entry->path().string().c_str());
-						SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry->path().string()).c_str());
-						SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
-						SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
-					}
+					
 				}
 				
 
