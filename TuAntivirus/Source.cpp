@@ -7,7 +7,6 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
-#include <set>
 #include "md5.h"
 
 
@@ -103,7 +102,7 @@ int WINAPI WinMain(
 	wcex.hInstance = hInstance;
 	wcex.hIcon = LoadIcon(wcex.hInstance, IDI_APPLICATION);
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.hbrBackground = CreateSolidBrush(RGB(240, 240, 240));
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
@@ -177,7 +176,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
 	HDC hdc;
-	TCHAR logo[] = _T("Tu AntiVirus");
+	TCHAR logo[] = _T("TuAntiVirus");
 	TCHAR path[] = _T("Path:");
 	TCHAR md5value[] = _T("MD5:");
 	TCHAR status[] = _T("Status:");
@@ -189,6 +188,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Here your application is laid out.
 		// For this introduction, we just print out "Tu AntiVirus!"
 		// in the bottom left corner.
+		SetBkColor(hdc, RGB(240, 240, 240));
 		TextOut(hdc, 20, 500, logo, _tcslen(logo));
 		TextOut(hdc, 20, 100, path, _tcslen(path));
 		TextOut(hdc, 20, 120, md5value, _tcslen(md5value));
@@ -276,57 +276,53 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			std::string infected = "infected";
 			std::string clean = "clean";
 			std::ofstream file;
-			//"Program Files","Program Files (x86)","AppData","ProgramData"
-			std::set<std::string> ignoredirs = { "system32","$Recycle.Bin","Windows" };
 			std::string path = "C:\\Users";
-			for (std::filesystem::recursive_directory_iterator entry(path), end; entry != end; ++entry)
+			try
 			{
-				if (ignoredirs.find(entry->path().filename().string()) != ignoredirs.end())
+				for (auto const entry : std::filesystem::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
 				{
-					entry.disable_recursion_pending();
-				}
-				else if (!std::filesystem::is_directory(entry->path()) && entry->path().has_extension())
-				{
-					if (entry->path().extension() == ".exe")
+					std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
+					std::string result = "result.txt";
+					std::string line;
+					bool found = false;
+					while (std::getline(hash, line) && !found)
 					{
-						std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
-						std::string result = "result.txt";
-						std::string line;
-						bool found = false;
-						while (std::getline(hash, line) && !found)
+						if (line.find(md5(entry.path().string())) != std::string::npos)
 						{
-							if (line.find(md5(entry->path().string())) != std::string::npos)
-							{
-								found = true;
-							}
-						}
-						if (found)
-						{
-							file.open(result.c_str(), std::ios_base::app);
-							file << entry->path().string().c_str() << " " << md5(entry->path().string()) << " Infected " << "\n";
-							file.close();
-							SetWindowText(GetDlgItem(hwnd, PATH), entry->path().string().c_str());
-							SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry->path().string()).c_str());
-							SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
-							SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
-						}
-						else
-						{
-							SetWindowText(GetDlgItem(hwnd, PATH), entry->path().string().c_str());
-							SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry->path().string()).c_str());
-							SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
-							SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
+							found = true;
 						}
 					}
-					
+					if (found)
+					{
+						file.open(result.c_str(), std::ios_base::app);
+						file << entry.path().string().c_str() << " " << md5(entry.path().string()) << " Infected " << "\n";
+						file.close();
+						SetWindowText(GetDlgItem(hwnd, PATH), entry.path().string().c_str());
+						SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry.path().string()).c_str());
+						SetWindowText(GetDlgItem(hwnd, STATUS), infected.c_str());
+						SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
+					}
+					else
+					{
+						SetWindowText(GetDlgItem(hwnd, PATH), entry.path().string().c_str());
+						SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry.path().string()).c_str());
+						SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
+						SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
+					}
 				}
+				SetWindowText(GetDlgItem(hwnd, SCANNING), done.c_str());
 			}
+			catch (...)
+			{
 
-			SetWindowText(GetDlgItem(hwnd, SCANNING), done.c_str());
+			}
+			
+		
+
 		}
 		else if (LOWORD(wParam) == OPENFILE)
 		{
-			
+
 		}
 		break;
 	case WM_DESTROY:
