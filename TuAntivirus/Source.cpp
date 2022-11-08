@@ -324,6 +324,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			}
 		}
+		else if (LOWORD(wParam) == RESULT)
+		{
+			ShellExecuteW(NULL, L"open", L"result.txt", NULL, NULL, SW_SHOW);
+		}
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
