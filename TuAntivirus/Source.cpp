@@ -7,21 +7,17 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
-#include <gdiplus.h>
 #include "md5.h"
-#include "resource.h"
 
-#pragma comment( lib, "gdiplus" )
 
 // Global variables
 #define SCAN 1
-#define FULLSCAN 2
+#define SCANALL 2
 #define RESULT 3
 #define PATH 4
 #define SCANTEXT 5
 #define STATUS 6
 #define SCANNING 7
-
 
 HWND hwnd;
 
@@ -37,7 +33,7 @@ HINSTANCE hInst;
 
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-void draw(HDC hdc);
+
 
 OPENFILENAME ofn;
 DWORD error_value;
@@ -118,11 +114,6 @@ int WINAPI WinMain(
 
 		return 1;
 	}
-
-	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR gdiplusToken;
-	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
-
 	// Store instance handle in our global variable
 	hInst = hInstance;
 
@@ -141,7 +132,7 @@ int WINAPI WinMain(
 		WS_EX_OVERLAPPEDWINDOW,
 		szWindowClass,
 		szTitle,
-		WS_SYSMENU | WS_CAPTION ,
+		WS_CAPTION | WS_SYSMENU | WS_VISIBLE | WS_MINIMIZEBOX,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		800, 600,
 		NULL,
@@ -149,7 +140,6 @@ int WINAPI WinMain(
 		hInstance,
 		NULL
 	);
-
 
 	if (!hwnd)
 	{
@@ -171,7 +161,6 @@ int WINAPI WinMain(
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	Gdiplus::GdiplusShutdown(gdiplusToken);
 	return (int)msg.wParam;
 
 }
@@ -341,16 +330,4 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return DefWindowProc(hWnd, message, wParam, lParam);
 		break;
 	}
-}
-
-void draw(HDC scrdc)
-{
-
-	Gdiplus::Graphics gf(scrdc);
-	Gdiplus::Bitmap happy(L"happy.png");
-	Gdiplus::Bitmap sad(L"sad.png");
-	gf.DrawImage(&happy, 86, 120,200,200);
-	gf.DrawImage(&sad, 86, 300,200,200);
-	//::ReleaseDC( NULL, scrdc );
-	//DeleteObject(scrdc);
 }
