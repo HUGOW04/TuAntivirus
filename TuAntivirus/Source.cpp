@@ -12,7 +12,7 @@
 
 // Global variables
 #define SCAN 1
-#define SCANALL 2
+#define FULLSCAN 2
 #define RESULT 3
 #define PATH 4
 #define SCANTEXT 5
@@ -181,7 +181,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	TCHAR md5value[] = _T("MD5:");
 	TCHAR status[] = _T("Status:");
 	TCHAR scanning[] = _T("Scanning: ");
-	
+
 	switch (message)
 	{
 	case WM_PAINT:
@@ -277,7 +277,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			std::string infected = "infected";
 			std::string clean = "clean";
 			std::ofstream file;
-			std::string path = "C:\\Users\\hugow\\Desktop\\New folder";
+			std::string path = "C:\\Users";
 			try
 			{
 				for (auto const entry : std::filesystem::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
@@ -292,7 +292,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						{
 							found = true;
 						}
-
 					}
 					if (found)
 					{
@@ -306,9 +305,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					else
 					{
-						file.open(result.c_str(), std::ios_base::app);
-						file << entry.path().string().c_str() << " " << md5(entry.path().string()) << " Clean " << "\n";
-						file.close();
 						SetWindowText(GetDlgItem(hwnd, PATH), entry.path().string().c_str());
 						SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry.path().string()).c_str());
 						SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
