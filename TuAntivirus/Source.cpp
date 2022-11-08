@@ -174,13 +174,14 @@ int WINAPI WinMain(
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	PAINTSTRUCT ps;
-	HDC hdc;
+	PAINTSTRUCT     ps;
+	HDC             hdc;
 	TCHAR logo[] = _T("TuAntiVirus");
 	TCHAR path[] = _T("Path:");
 	TCHAR md5value[] = _T("MD5:");
 	TCHAR status[] = _T("Status:");
-	TCHAR scanning[] = _T("Scanning:");
+	TCHAR scanning[] = _T("Scanning: ");
+	
 	switch (message)
 	{
 	case WM_PAINT:
@@ -190,10 +191,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// in the bottom left corner.
 		SetBkColor(hdc, RGB(240, 240, 240));
 		TextOut(hdc, 20, 500, logo, _tcslen(logo));
-		TextOut(hdc, 20, 100, path, _tcslen(path));
-		TextOut(hdc, 20, 120, md5value, _tcslen(md5value));
-		TextOut(hdc, 20, 140, status, _tcslen(status));
-		TextOut(hdc, 20, 160, scanning, _tcslen(scanning));
+		TextOut(hdc, 170, 20, path, _tcslen(path));
+		TextOut(hdc, 170, 40, md5value, _tcslen(md5value));
+		TextOut(hdc, 170, 60, status, _tcslen(status));
+		TextOut(hdc, 170, 80, scanning, _tcslen(scanning));
 		// End application-specific layout section.
 		EndPaint(hWnd, &ps);
 		break;
@@ -202,29 +203,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			WS_CHILD | WS_VISIBLE,
 			20, 20, 100, 80,
 			hWnd, (HMENU)SCAN, NULL, NULL);
-		CreateWindow(TEXT("Button"), TEXT("ScanAll"),
+		CreateWindow(TEXT("Button"), TEXT("FullScan"),
 			WS_CHILD | WS_VISIBLE,
-			120, 20, 100, 80,
-			hWnd, (HMENU)SCANALL, NULL, NULL);
-		CreateWindow(TEXT("Button"), TEXT("Open Result"),
+			20, 120, 100, 80,
+			hWnd, (HMENU)FULLSCAN, NULL, NULL);
+		CreateWindow(TEXT("Button"), TEXT("Result"),
 			WS_CHILD | WS_VISIBLE,
-			220, 20, 100, 80,
-			hWnd, (HMENU)OPENFILE, NULL, NULL);
+			20, 220, 100, 80,
+			hWnd, (HMENU)MENU, NULL, NULL);
 		CreateWindow("Static", "...",
 			WS_VISIBLE | WS_CHILD,
-			65, 100, 700, 20,
+			230, 20, 700, 20,
 			hWnd, (HMENU)PATH, NULL, NULL);
 		CreateWindow("Static", "...",
 			WS_VISIBLE | WS_CHILD,
-			65, 120, 700, 20,
+			230, 40, 700, 20,
 			hWnd, (HMENU)SCANTEXT, NULL, NULL);
 		CreateWindow("Static", "N/A",
 			WS_VISIBLE | WS_CHILD,
-			65, 140, 700, 20,
+			230, 60, 700, 20,
 			hWnd, (HMENU)STATUS, NULL, NULL);
 		CreateWindow("Static", "...",
 			WS_VISIBLE | WS_CHILD,
-			85, 160, 600, 20,
+			240, 80, 700, 20,
 			hWnd, (HMENU)SCANNING, NULL, NULL);
 		break;
 	case WM_COMMAND:
@@ -269,14 +270,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			SetWindowText(GetDlgItem(hwnd, SCANNING), done.c_str());
 		}
-		else if (LOWORD(wParam) == SCANALL)
+		else if (LOWORD(wParam) == FULLSCAN)
 		{
 			std::string scan = "Scanning";
 			std::string done = "Done";
 			std::string infected = "infected";
 			std::string clean = "clean";
 			std::ofstream file;
-			std::string path = "C:\\Users";
+			std::string path = "C:\\Users\\hugow\\Desktop\\New folder";
 			try
 			{
 				for (auto const entry : std::filesystem::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
@@ -291,6 +292,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						{
 							found = true;
 						}
+
 					}
 					if (found)
 					{
@@ -304,6 +306,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					else
 					{
+						file.open(result.c_str(), std::ios_base::app);
+						file << entry.path().string().c_str() << " " << md5(entry.path().string()) << " Clean " << "\n";
+						file.close();
 						SetWindowText(GetDlgItem(hwnd, PATH), entry.path().string().c_str());
 						SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry.path().string()).c_str());
 						SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
@@ -316,13 +321,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 
 			}
-			
-		
-
-		}
-		else if (LOWORD(wParam) == OPENFILE)
-		{
-
 		}
 		break;
 	case WM_DESTROY:
@@ -332,5 +330,4 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return DefWindowProc(hWnd, message, wParam, lParam);
 		break;
 	}
-	return 0;
 }
