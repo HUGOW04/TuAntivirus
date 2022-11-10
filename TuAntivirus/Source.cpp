@@ -201,7 +201,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_CREATE:
-		void doing();
 		CreateWindow(TEXT("Button"), TEXT("Scan"),
 			WS_CHILD | WS_VISIBLE,
 			20, 20, 100, 80,
@@ -297,21 +296,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void scanAll()
 {
-	
+	std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
+	std::string result = "result.txt";
+	std::string scan = "Scanning";
+	std::string done = "Done";
+	std::string infected = "infected";
+	std::string clean = "clean";
+	std::ofstream file;
+	std::string path = "C:\\Users\\hugow\\Desktop\\New folder";
+	std::string line;
 	try
 	{
-		std::string scan = "Scanning";
-		std::string done = "Done";
-		std::string infected = "infected";
-		std::string clean = "clean";
-		std::ofstream file;
-		std::string path = "C:\\Users\\hugow\\Desktop\\New folder";
-		for (auto const& entry : std::filesystem::recursive_directory_iterator(path))
+
+		for (auto const entry : std::filesystem::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
 		{
-			
-			std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
-			std::string result = "result.txt";
-			std::string line;
+
 			bool found = false;
 			while (std::getline(hash, line) && !found)
 			{
@@ -340,14 +339,12 @@ void scanAll()
 				SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
 				SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
 			}
-
-
 		}
 
 		SetWindowText(GetDlgItem(hwnd, SCANNING), done.c_str());
 	}
 	catch (...)
 	{
-
+		
 	}
 }
