@@ -303,7 +303,7 @@ void scanAll()
 	std::string infected = "infected";
 	std::string clean = "clean";
 	std::ofstream file;
-	std::string path = "C:\\Users\\hugow\\Desktop\\New folder";
+	std::string path = "C:\\";
 	std::string line;
 	try
 	{
