@@ -297,23 +297,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void scanAll()
 {
-	std::string done = "Done";
-	std::string scan = "Scanning";
-	std::string infected = "infected";
-	std::string clean = "clean";
-	std::ofstream file;
-	std::string path = "C:\\";
-	std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
-	std::string result = "result.txt";
-	std::string line;
+	
 	try
 	{
-
-		for (auto const entry : std::filesystem::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
+		std::string scan = "Scanning";
+		std::string done = "Done";
+		std::string infected = "infected";
+		std::string clean = "clean";
+		std::ofstream file;
+		std::string path = "C:\\Users\\hugow\\Desktop\\New folder";
+		for (auto const& entry : std::filesystem::recursive_directory_iterator(path))
 		{
-
+			
+			std::ifstream hash("D:\\Visual Studio\\C++\\TuAntivirus\\TuAntivirus\\hashcodes.txt");
+			std::string result = "result.txt";
+			std::string line;
 			bool found = false;
-			while (std::getline(hash, line) && !found > 0)
+			while (std::getline(hash, line) && !found)
 			{
 				if (line.find(md5(entry.path().string())) != std::string::npos)
 				{
@@ -333,14 +333,17 @@ void scanAll()
 			else
 			{
 				file.open(result.c_str(), std::ios_base::app);
-				file << entry.path().string().c_str() << " " << md5(entry.path().string()) << " Clean" << "\n";
+				file << entry.path().string().c_str() << " " << md5(entry.path().string()) << " Clean " << "\n";
 				file.close();
 				SetWindowText(GetDlgItem(hwnd, PATH), entry.path().string().c_str());
 				SetWindowText(GetDlgItem(hwnd, SCANTEXT), md5(entry.path().string()).c_str());
 				SetWindowText(GetDlgItem(hwnd, STATUS), clean.c_str());
 				SetWindowText(GetDlgItem(hwnd, SCANNING), scan.c_str());
 			}
+
+
 		}
+
 		SetWindowText(GetDlgItem(hwnd, SCANNING), done.c_str());
 	}
 	catch (...)
